@@ -16,3 +16,7 @@ speechbrain==0.5.16
 torch==2.1.2
 torchaudio==2.1.2
 tqdm==4.66.1
+uvicorn==0.25.0
+fastapi==0.108.0
+fastpunct==2.0.2
+soundfile==0.12.1
