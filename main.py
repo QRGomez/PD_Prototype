@@ -5,7 +5,7 @@ import os
 
 from speechbrain.pretrained import EncoderDecoderASR
 from preprocess import MP32Wav, Video2Wav
-#from PredictImages import predict
+from PredictImages import predict
 from OCR_Predict import Predict
 from postProcess import perform_spell_check, perform_punctuation_check
 
@@ -120,6 +120,7 @@ async def transcribe_image(file: UploadFile = File(...)):
         # Remove the temporary file
         os.remove(file_path)
 
+        print(transcripted_text)
         return {"Transcription": transcripted_text}
 
     except Exception as e:

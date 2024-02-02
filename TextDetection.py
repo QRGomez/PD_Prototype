@@ -15,7 +15,7 @@ def DetectAndSortLines(median_filtered_image):
 def DetectAndSortWords(median_filtered_image):
     height, width = median_filtered_image.shape[:2]
 
-    factor_w = 160
+    factor_w = 165
     factor_h = 130
     # Calculate the kernel size based on the factor
     kernel_size = min(height/ factor_h, width/ factor_w)

@@ -33,7 +33,8 @@ def ResizeImage(filepath):
 def NoiseReduction(image):
 
     blurred_img = cv2.GaussianBlur(image, (5, 5), 0)
-    median_filtered = cv2.medianBlur(blurred_img, 5) 
+    blur = cv2.bilateralFilter(blurred_img,7,100,100)
+    median_filtered = cv2.medianBlur(blur, 5) 
 
     return median_filtered
 
