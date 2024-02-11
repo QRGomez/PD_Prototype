@@ -5,11 +5,7 @@ import os
 
 from speechbrain.pretrained import EncoderDecoderASR
 from preprocess import MP32Wav, Video2Wav
-from PredictImages import predict
-from OCR_Predict import Predict
-from postProcess import perform_spell_check, perform_punctuation_check
-
-
+from OCR import perform_ocr
 
 app = FastAPI()  #uvicorn main:app --reload (This runs starts a local instance of the 
 
@@ -111,11 +107,7 @@ async def transcribe_image(file: UploadFile = File(...)):
             file_output.write(file.file.read())
 
         # Perform transcription using the full file path
-        transcripted_text = Predict(file_path)
-
-        transcripted_text = perform_spell_check(transcripted_text)
-
-        transcripted_text = perform_punctuation_check(transcripted_text)
+        transcripted_text = perform_ocr(file_path)
     
         # Remove the temporary file
         os.remove(file_path)

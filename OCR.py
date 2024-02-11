@@ -32,6 +32,3 @@ def perform_ocr(image_path):
         recognized_text += result + '\n'
     
     return recognized_text
-
-img = '../OCR Prototype/Text_segmentation/sample_img (5).jpg'
-print(perform_ocr(img))
