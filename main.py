@@ -6,6 +6,7 @@ import os
 from speechbrain.pretrained import EncoderDecoderASR
 from preprocess import MP32Wav, Video2Wav
 from OCR import perform_ocr
+from loadModels import OCR_Model, ASR_Model
 
 app = FastAPI()  #uvicorn main:app --reload (This runs starts a local instance of the 
 
@@ -17,7 +18,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-AUDIODIR = 'audios/'
+reader = OCR_Model()
+asr_model = ASR_Model()
 
 @app.get('/')
 async def root():
@@ -42,11 +44,6 @@ async def transcribe_audio(file: UploadFile = File(...)):
         else:
             return {"error": "Unsupported file type"}
         
-        # Transcribe the audio using the ASR model
-        asr_model = EncoderDecoderASR.from_hparams(
-            source="speechbrain/asr-crdnn-rnnlm-librispeech",
-            savedir="pretrained_models/asr-crdnn-rnnlm-librispeech",
-        )
         transcription = asr_model.transcribe_file(file_path)
 
         # Remove the temporary filez
@@ -73,12 +70,7 @@ async def transcribe_video(file: UploadFile = File(...)):
             file_path = Video2Wav(file_path, "audios", f"{file_name}.wav")
         else:
             return {"error": "Unsupported file type"}
-
-        # Transcribe the audio using the ASR model
-        asr_model = EncoderDecoderASR.from_hparams(
-            source="speechbrain/asr-crdnn-rnnlm-librispeech",
-            savedir="pretrained_models/asr-crdnn-rnnlm-librispeech",
-        )
+        
         transcripted_text = asr_model.transcribe_file(file_path)
 
         # Remove the temporary file
