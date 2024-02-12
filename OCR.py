@@ -1,13 +1,7 @@
 import easyocr
 import cv2
  
-def perform_ocr(image_path):
-    # Create an OCR reader with the specified language (custom recognition model)
-    #custom_model_path = 'custom_model3'
-    #reader =  easyocr.Reader(['en'],recog_network='best_accuracy',model_storage_directory=custom_model_path,user_network_directory=custom_model_path) 
-
-    # Create an OCR reader with the specified language (Pretrained model) 
-    reader =  easyocr.Reader(['en']) 
+def perform_ocr(image_path,reader):
     
     recognized_text =""
 
