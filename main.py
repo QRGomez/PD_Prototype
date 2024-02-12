@@ -1,15 +1,14 @@
 import speechbrain as sb
 from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.responses import FileResponse , JSONResponse
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
-from speechbrain.pretrained import EncoderDecoderASR
 from preprocess import MP32Wav, Video2Wav
 from OCR import perform_ocr
 from loadModels import OCR_Model, ASR_Model
 from generateFiles import create_word_document,create_brf_file
-from alphaToBraille import translate as alpha_to_braille
+from pybraille import pybrl as brl
 
 app = FastAPI()  #uvicorn main:app --reload (This runs starts a local instance of the 
 
@@ -54,18 +53,24 @@ async def transcribe_audio(file: UploadFile = File(...)):
             return {"error": "Unsupported file type"}
         
         transcription = asr_model.transcribe_file(file_path)
+        brltext = brl.translate(transcription) 
+        brltext = brl.toUnicodeSymbols(brltext, flatten=True)
+
         docx_filename  = upload_dir + name + '.doc'
         create_word_document(docx_filename,transcription)
         # Remove the temporary filez
         os.remove(temp_filepath)
         os.remove(file_path)
-        print(transcription)
         
+        print("Transcription:"+ transcription)
+        print("Braille:" +brltext)
+
         return FileResponse(
             docx_filename,
             filename=name+'.doc',
             media_type="application/msword",
         )
+    
     except Exception as e:
         return {"error": f"Error processing file: {str(e)}"}
 
@@ -91,13 +96,17 @@ async def transcribe_video(file: UploadFile = File(...)):
             return {"error": "Unsupported file type"}
         
         transcripted_text = asr_model.transcribe_file(file_path)
-        
+        brltext = brl.translate(transcripted_text) 
+        brltext = brl.toUnicodeSymbols(brltext, flatten=True)
+
         docx_filename  = upload_dir + name + '.doc'
         create_word_document(docx_filename,transcripted_text)
         # Remove the temporary file
         os.remove(temp_filepath)
         os.remove(file_path)
-        print(transcripted_text)
+
+        print("Transcription:"+ transcripted_text)
+        print("Braille:" + brltext)
 
         return FileResponse(
             docx_filename,
@@ -130,6 +139,9 @@ async def transcribe_image(file: UploadFile = File(...)):
         transcripted_text = perform_ocr(file_path,reader)
         #braille_text = alpha_to_braille(transcripted_text)
         
+        brltext = brl.translate(transcripted_text) 
+        brltext = brl.toUnicodeSymbols(brltext, flatten=True)   
+
         docx_filename  = upload_dir + name + '.doc'
         #brf_filename  = name +'. brf'
 
@@ -139,7 +151,9 @@ async def transcribe_image(file: UploadFile = File(...)):
         # Remove the temporary file
         os.remove(file_path)
         #os.remove(name + '.doc')
-        print(transcripted_text)
+        print("Transcription:"+ transcripted_text)
+        print("Braille:" +brltext)
+
         return FileResponse(
             docx_filename,
             filename=name+'.doc',

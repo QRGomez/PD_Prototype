@@ -31,16 +31,15 @@ async function uploadFile(fileInput, endpoint, resultDivId) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
 
-        
-            const data = await response.json();
-        
-            if (data && data.Transcription !== undefined) {
-                // Display the result
-                const resultDiv = document.getElementById(resultDivId);
-                resultDiv.innerHTML = `<p>Transcription: ${data.Transcription}</p>`;
-            } else {
-                console.error('Unexpected API response format:', data);
-            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'transcription.doc');
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
 
         } catch (error) {
             console.error('Error uploading file:', error);

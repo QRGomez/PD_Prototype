@@ -1,6 +1,7 @@
 import easyocr
 import speechbrain as sb
 from speechbrain.pretrained import EncoderDecoderASR
+
 def OCR_Model():
 
     # Create an OCR reader with the specified language (Pretrained model) 
