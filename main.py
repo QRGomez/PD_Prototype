@@ -181,7 +181,7 @@ async def transcribe_image(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @app.post('/transcribe/docs') 
-async def transcribe_documents(file: UploadFile = File(...)):
+async def transcribe_documents(file: UploadFile = File(...)): 
     try:
         # Ensure the directory exists; create it if necessary
         os.makedirs(OUTPUTDIR, exist_ok=True)
@@ -204,9 +204,13 @@ async def transcribe_documents(file: UploadFile = File(...)):
         new_file_path = os.path.join(OUTPUTDIR, os.path.basename(file_path))
         shutil.move(file_path, new_file_path)
 
-        docx_filename = os.path.join(OUTPUTDIR, os.path.splitext(os.path.basename(file_path))[0] + '(transcription).doc')
+
+        name,_ = os.path.splitext(file.filename) 
+
+        docx_filename = os.path.join(OUTPUTDIR, name + '(transcription).doc')
     
-        print(docx_filename,file_path)
+        print(docx_filename)
+        print(name)
 
         create_word_document(docx_filename,transcripted_text)
         print("Transcription:"+ transcripted_text)
