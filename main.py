@@ -157,7 +157,7 @@ async def transcribe_image(file: UploadFile = File(...)):
         docx_filename  = upload_dir + name + '.doc'
        # brf_filename  = upload_dir+ name +'.brf'
 
-        create_word_document(docx_filename,brltext)
+        create_word_document(docx_filename,transcripted_text)
         #create_brf_file(brf_filename,brltext)
 
         # Remove the temporary file
@@ -169,7 +169,7 @@ async def transcribe_image(file: UploadFile = File(...)):
 
         return FileResponse(
             docx_filename,
-            filename=name+'.brf',
+            filename=name+'.doc',
             media_type="application/octet-stream",
             background = BackgroundTask(os.remove,docx_filename)
         )
