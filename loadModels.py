@@ -5,7 +5,7 @@ from speechbrain.pretrained import EncoderDecoderASR
 def OCR_Model():
 
     # Create an OCR reader with the specified language (Pretrained model) 
-    reader =  easyocr.Reader(['en']) 
+    reader =  easyocr.Reader(['en'],gpu=True) 
 
     # Create an OCR reader with the specified language (custom recognition model)
     #custom_model_path = 'custom_model3'
@@ -17,5 +17,6 @@ def ASR_Model():
     asr_model = EncoderDecoderASR.from_hparams(
     source="speechbrain/asr-crdnn-rnnlm-librispeech",
     savedir="pretrained_models/asr-crdnn-rnnlm-librispeech",
+    run_opts = {"device": "cuda"}
 )
     return asr_model

@@ -1,16 +1,16 @@
 async function uploadAudio() {
     const fileInput = document.getElementById('audioInput');
-    await uploadFile(fileInput, 'http://localhost:8000/transcribe/audio', 'audioResult');
+    await uploadFile(fileInput, 'https://c283-136-158-1-127.ngrok-free.app/transcribe/audio', 'audioResult');
 }
 
 async function uploadVideo() {
     const fileInput = document.getElementById('videoInput');
-    await uploadFile(fileInput, 'http://localhost:8000/transcribe/video', 'videoResult');
+    await uploadFile(fileInput, 'https://c283-136-158-1-127.ngrok-free.app/transcribe/video', 'videoResult');
 }
 
 async function uploadImage() {
     const fileInput = document.getElementById('imageInput');
-    await uploadFile(fileInput, 'http://localhost:8000/transcribe/image', 'imageResult');
+    await uploadFile(fileInput, 'https://c283-136-158-1-127.ngrok-free.app/transcribe/image', 'imageResult');
 }
 
 
@@ -24,7 +24,10 @@ async function uploadFile(fileInput, endpoint, resultDivId) {
         try {
             const response = await fetch(endpoint, {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers:new Headers({
+                    "ngrok-skip-browser-warning": "69420",
+                  })
             });
 
             if (!response.ok) {

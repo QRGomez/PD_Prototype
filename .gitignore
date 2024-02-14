@@ -1,2 +1,8 @@
 pretrained_models
-pretrained_models/*
+outputs
+__pycache__
+audio_cache
+audios
+_exceptions.log
+pytorchTest
+main (1)
