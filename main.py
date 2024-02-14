@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.background import BackgroundTask
 import os
 import shutil
+import base64
 
 from preprocess import MP32Wav, Video2Wav
 from OCR import perform_ocr
@@ -80,8 +81,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
             filename = os.path.basename(docx_filename),
             media_type="application/msword",
             background = BackgroundTask(os.remove,docx_filename)
-        )
-    
+        )   
     except Exception as e:
         return {"error": f"Error processing file: {str(e)}"}
 
@@ -180,23 +180,20 @@ async def transcribe_image(file: UploadFile = File(...)):
         # Raise an HTTPException with a 500 status code
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-@app.post('/transcribe/docs') #Not yet complete ------------------------
+@app.post('/transcribe/docs') 
 async def transcribe_documents(file: UploadFile = File(...)):
     try:
-        # Define a directory to save uploaded files
-        upload_dir = OUTPUTDIR
-      
-        name, _ = os.path.splitext(file.filename) 
-
         # Ensure the directory exists; create it if necessary
-        os.makedirs(upload_dir, exist_ok=True)
-
-        # Combine the directory and the file name to get the full file path
-        file_path = os.path.join(upload_dir, file.filename)
+        os.makedirs(OUTPUTDIR, exist_ok=True)
         
         # Save the uploaded file to the specified directory
+        file_path = os.path.join(AUDIODIR, file.filename)
         with open(file_path, 'wb') as file_output:
             file_output.write(file.file.read())
+        
+        # Check file extension and process accordingly
+        name, ext = os.path.splitext(file_path)
+
 
         # Perform transcription using the full file path
         transcripted_text = extract_text_from_file(file_path)
@@ -204,22 +201,24 @@ async def transcribe_documents(file: UploadFile = File(...)):
         brltext = brl.translate(transcripted_text) 
         brltext = brl.toUnicodeSymbols(brltext, flatten=True)   
 
-        docx_filename  = upload_dir + name + '.doc'
-        #brf_filename  = name +'. brf'
+        new_file_path = os.path.join(OUTPUTDIR, os.path.basename(file_path))
+        shutil.move(file_path, new_file_path)
+
+        docx_filename = os.path.join(OUTPUTDIR, os.path.splitext(os.path.basename(file_path))[0] + '(transcription).doc')
+    
+        print(docx_filename,file_path)
 
         create_word_document(docx_filename,transcripted_text)
-        #create_brf_file(brf_filename,brf_filename)
-
-        # Remove the temporary file
-        os.remove(file_path)
-        #os.remove(name + '.doc')
         print("Transcription:"+ transcripted_text)
         print("Braille:" +brltext)
+
+        os.remove(new_file_path)
 
         return FileResponse(
             docx_filename,
             filename=name+'.doc',
             media_type="application/msword",
+            background = BackgroundTask(os.remove,docx_filename)
         )
     
     except Exception as e:

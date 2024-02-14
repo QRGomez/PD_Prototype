@@ -1,7 +1,12 @@
 import docx
-import PyPDF2
+import PyPDF4
 import textract
+import os 
+
 from pathlib import Path
+from pypdf import PdfReader
+
+
 
 
 def extract_text_from_file(file_path):
@@ -17,16 +22,11 @@ def extract_text_from_file(file_path):
 
     elif file_extension == ".pdf":
         # Extract text from PDF file
-        with open(file_path, "rb") as pdf_file:
-            pdf_reader = PyPDF2.PdfReader(pdf_file)
-            text = ""
-            for page_num in range(len(pdf_reader.pages)):
-                page = pdf_reader.pages[page_num]
-                text += page.extract_text()
-
-        # Remove "Powered by TCPDF" footer
-        text = text.replace("Powered by TCPDF (www.tcpdf.org)", "")
-
+        reader = PdfReader(file_path)
+        
+        for page in reader.pages:
+            text += page.extract_text()
+            
     elif file_extension == ".txt":
         # Extract text from TXT file
         with open(file_path, "r", encoding="utf-8") as txt_file:
