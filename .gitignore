@@ -3,6 +3,6 @@ outputs
 __pycache__/
 audio_cache/
 audios/
-_except ions.log
+_exceptions.log
 pytorchTest.ipynb
 main (1).py

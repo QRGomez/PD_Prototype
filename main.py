@@ -5,14 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.background import BackgroundTask
 import os
 import shutil
-import base64
 
 from preprocess import MP32Wav, Video2Wav
 from OCR import perform_ocr
 from loadModels import OCR_Model, ASR_Model
 from generateFiles import create_word_document,create_brf_file,create_pef_file
 from docInput import extract_text_from_file
-from convertText import convert_to_braille
+from convertText2Braille import convert_to_braille
 
 
 app = FastAPI()  #uvicorn main:app --reload (This runs starts a local instance of the 
@@ -81,7 +80,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
         pef_filename = os.path.join(OUTPUTDIR, name + '(transcription).pef')
         brf_filename = os.path.join(OUTPUTDIR, name + '(transcription).brf')
 
-        create_word_document(docx_filename,transcription)
+        create_word_document(docx_filename,transcription.lower())
         create_pef_file(pef_filename,pef)
         create_brf_file(brf_filename,brf)
 
@@ -130,7 +129,7 @@ async def transcribe_video(file: UploadFile = File(...)):
         pef_filename = os.path.join(OUTPUTDIR, name + '(transcription).pef')
         brf_filename = os.path.join(OUTPUTDIR, name + '(transcription).brf')
 
-        create_word_document(docx_filename,transcripted_text)
+        create_word_document(docx_filename,transcripted_text.lower())
         create_pef_file(pef_filename,pef)
         create_brf_file(brf_filename,brf)
 

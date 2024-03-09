@@ -1,13 +1,15 @@
-from pybraille import pybrl as brl
+from pybrl import pybrl as brl
 from braillecodeToASCII import braille_to_ascii_conversion as b2t
+from pybraille import convertText
 
 def convert_to_braille(transcripted_text):
     lines = transcripted_text.split('\n')
     translated_lines_pef = []
     translated_lines_brf = []
     for line in lines:
-        brltext = brl.translate(line) 
-        brltext = brl.toUnicodeSymbols(brltext, flatten=True)
+        brltext = convertText(line)
+        #brltext = brl.translate(line) 
+        #brltext = brl.toUnicodeSymbols(brltext, flatten=True)
         brfText = b2t(brltext)
         
         translated_lines_brf.append(brfText)

@@ -35,9 +35,9 @@ import six
 from six import unichr, iteritems, u
 from six.moves import range
 
-from pybraille import languages
-from pybraille import brl_mathematics as mathematics
-from pybraille import utils
+from pybrl import languages
+from pybrl import brl_mathematics as mathematics
+from pybrl import utils
 
 use_nemeth_code = True
 
