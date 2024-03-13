@@ -16,3 +16,4 @@ def braille_to_ascii_conversion(braille_string):
         if symbol in braille_to_ascii:
             ascii_string += braille_to_ascii[symbol]
     return ascii_string
+

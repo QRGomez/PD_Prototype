@@ -31,19 +31,23 @@ OUTPUTDIR = 'outputs/'
 AUDIODIR = 'audio_cache/'
 
 def get_download_links(filename: str) -> dict:
-    base_url = "http://34.142.200.21:8000"  # Change this to your FastAPI server address
+    base_url = "http://localhost:8000"
+    #base_url = "http://34.126.91.78:8000"  # Change this to your FastAPI server address
     download_links = {
-        "doc": f"{base_url}/download/outputs/{filename}(transcription).doc",
-        "pef": f"{base_url}/download/outputs/{filename}(transcription).pef",
-        "brf": f"{base_url}/download/outputs/{filename}(transcription).brf"
+        "docx": f"{base_url}/download/outputs/{filename}(transcription).doc",
+        "pef_g1": f"{base_url}/download/outputs/{filename}(transcription).pef",
+        "brf_g1": f"{base_url}/download/outputs/{filename}(transcription).brf",
+        "pef_g2": f"{base_url}/download/outputs/{filename}_g2(transcription).pef",
+        "brf_g2": f"{base_url}/download/outputs/{filename}_g2(transcription).brf"
     }
     return download_links
 
-def get_response_content(filename: str, transcription: str, brf: str, pef: str) -> Dict[str, str]:
+def get_response_content(filename: str, transcription: str,  pef_g1: str, pef_g2:str) -> Dict[str, str]:
     download_links = get_download_links(filename)
     response_content = {
         "Transcription": transcription,
-        "Braille": pef,
+        "Braille": pef_g1,
+        "Braille_G2": pef_g2,
         "download_links": download_links
     }
     return response_content
@@ -75,11 +79,8 @@ async def transcribe_audio(file: UploadFile = File(...)):
                 return {"error": "Failed to convert MP3 to WAV"}
         
         # Transcribe audio file
-        print(file_path)
         transcription = asr_model.transcribe_file(file_path)
-        # Assuming asr_model is properly defined elsewhere
-        transcription = transcription.lower()
-        brf,pef = convert_to_braille(transcription.lower())
+        brf_g1,brf_g2,pef_g1,pef_g2 = convert_to_braille(transcription.lower())
 
         new_file_path = os.path.join(OUTPUTDIR, os.path.basename(file_path))
         shutil.move(file_path, new_file_path)
@@ -87,24 +88,25 @@ async def transcribe_audio(file: UploadFile = File(...)):
         name,_ = os.path.splitext(file.filename) 
 
         docx_filename = os.path.join(OUTPUTDIR, name + '(transcription).doc')
-        pef_filename = os.path.join(OUTPUTDIR, name + '(transcription).pef')
-        brf_filename = os.path.join(OUTPUTDIR, name + '(transcription).brf')
+        pef_g1_filename = os.path.join(OUTPUTDIR, name + '(transcription).pef')
+        brf_g1_filename = os.path.join(OUTPUTDIR, name + '(transcription).brf')
+        pef_g2_filename = os.path.join(OUTPUTDIR, name + '_g2(transcription).pef')
+        brf_g2_filename = os.path.join(OUTPUTDIR, name + '_g2(transcription).brf')
 
-        create_word_document(docx_filename,transcription)
-        create_pef_file(pef_filename,pef)
-        create_brf_file(brf_filename,brf)
+        create_word_document(docx_filename,transcription.lower())
+        create_pef_file(pef_g1_filename,pef_g1)
+        create_brf_file(brf_g1_filename,brf_g1)
+        create_pef_file(pef_g2_filename,pef_g2)
+        create_brf_file(brf_g2_filename,brf_g2)
+        
 
         os.remove(new_file_path)
+        os.remove(f"{name}.wav")
 
-        # download_links = get_download_links(name)
-
-        response_content = get_response_content(name, transcription, brf, pef)
+        response_content = get_response_content(name, transcription,pef_g1,pef_g2)
 
         #returnJSON with braille and transcription
         return JSONResponse(content=response_content)
-
-        # Return JSON response with download links
-        # return JSONResponse(content=download_links)
     
     except Exception as e:
         # Log the error for debugging purposes
@@ -133,8 +135,8 @@ async def transcribe_video(file: UploadFile = File(...)):
                 return {"error": "Failed to convert MP4 to WAV"}
 
         transcripted_text = asr_model.transcribe_file(file_path)
-        transcripted_text = transcripted_text.lower()
-        brf,pef = convert_to_braille(transcripted_text.lower())
+        brf_g1,brf_g2,pef_g1,pef_g2 = convert_to_braille(transcripted_text.lower())
+        
 
         new_file_path = os.path.join(OUTPUTDIR, os.path.basename(file_path))
         shutil.move(file_path, new_file_path)
@@ -142,24 +144,23 @@ async def transcribe_video(file: UploadFile = File(...)):
         name,_ = os.path.splitext(file.filename) 
 
         docx_filename = os.path.join(OUTPUTDIR, name + '(transcription).doc')
-        pef_filename = os.path.join(OUTPUTDIR, name + '(transcription).pef')
-        brf_filename = os.path.join(OUTPUTDIR, name + '(transcription).brf')
+        pef_g1_filename = os.path.join(OUTPUTDIR, name + '(transcription).pef')
+        brf_g1_filename = os.path.join(OUTPUTDIR, name + '(transcription).brf')
+        pef_g2_filename = os.path.join(OUTPUTDIR, name + '_g2(transcription).pef')
+        brf_g2_filename = os.path.join(OUTPUTDIR, name + '_g2(transcription).brf')
 
-        create_word_document(docx_filename,transcripted_text)
-        create_pef_file(pef_filename,pef)
-        create_brf_file(brf_filename,brf)
-
+        create_word_document(docx_filename,transcripted_text.lower())
+        create_pef_file(pef_g1_filename,pef_g1)
+        create_brf_file(brf_g1_filename,brf_g1)
+        create_pef_file(pef_g2_filename,pef_g2)
+        create_brf_file(brf_g2_filename,brf_g2)
+        
         os.remove(new_file_path)
+        os.remove(f"{name}.wav")
+        response_content = get_response_content(name, transcripted_text,pef_g1,pef_g2)
 
-        # download_links = get_download_links(name)
-
-        response_content = get_response_content(name, transcripted_text, brf, pef)
-
-        #returnJSON with braille and transcription
+        #return JSON with braille and transcription
         return JSONResponse(content=response_content)
-
-        # Return JSON response with download links
-        # return JSONResponse(content=download_links)
     
     except Exception as e:
         # Log the error for debugging purposes
@@ -183,7 +184,7 @@ async def transcribe_image(file: UploadFile = File(...)):
 
         # Perform transcription using the full file path
         transcripted_text = perform_ocr(file_path,reader)
-        brf,pef = convert_to_braille(transcripted_text)  
+        brf_g1,brf_g2,pef_g1,pef_g2 = convert_to_braille(transcripted_text)
 
         new_file_path = os.path.join(OUTPUTDIR, os.path.basename(file_path))
         shutil.move(file_path, new_file_path)
@@ -191,24 +192,23 @@ async def transcribe_image(file: UploadFile = File(...)):
         name,_ = os.path.splitext(file.filename) 
 
         docx_filename = os.path.join(OUTPUTDIR, name + '(transcription).doc')
-        pef_filename = os.path.join(OUTPUTDIR, name + '(transcription).pef')
-        brf_filename = os.path.join(OUTPUTDIR, name + '(transcription).brf')
+        pef_g1_filename = os.path.join(OUTPUTDIR, name + '(transcription).pef')
+        brf_g1_filename = os.path.join(OUTPUTDIR, name + '(transcription).brf')
+        pef_g2_filename = os.path.join(OUTPUTDIR, name + '_g2(transcription).pef')
+        brf_g2_filename = os.path.join(OUTPUTDIR, name + '_g2(transcription).brf')
 
         create_word_document(docx_filename,transcripted_text)
-        create_pef_file(pef_filename,pef)
-        create_brf_file(brf_filename,brf)
+        create_pef_file(pef_g1_filename,pef_g1)
+        create_brf_file(brf_g1_filename,brf_g1)
+        create_pef_file(pef_g2_filename,pef_g2)
+        create_brf_file(brf_g2_filename,brf_g2)
 
         os.remove(new_file_path)
 
-        # download_links = get_download_links(name)
-
-        response_content = get_response_content(name, transcripted_text, brf, pef)
+        response_content = get_response_content(name, transcripted_text,pef_g1,pef_g2)
 
         #returnJSON with braille and transcription
         return JSONResponse(content=response_content)
-
-        # Return JSON response with download links
-        # return JSONResponse(content=download_links)
     
     except Exception as e:
         # Log the error for debugging purposes
@@ -233,7 +233,7 @@ async def transcribe_documents(file: UploadFile = File(...)):
 
         # Perform transcription using the full file path
         transcripted_text = extract_text_from_file(file_path)
-        brf,pef = convert_to_braille(transcripted_text)
+        brf_g1,brf_g2,pef_g1,pef_g2 = convert_to_braille(transcripted_text)
 
         new_file_path = os.path.join(OUTPUTDIR, os.path.basename(file_path))
         shutil.move(file_path, new_file_path)
@@ -241,24 +241,23 @@ async def transcribe_documents(file: UploadFile = File(...)):
         name,_ = os.path.splitext(file.filename) 
 
         docx_filename = os.path.join(OUTPUTDIR, name + '(transcription).doc')
-        pef_filename = os.path.join(OUTPUTDIR, name + '(transcription).pef')
-        brf_filename = os.path.join(OUTPUTDIR, name + '(transcription).brf')
+        pef_g1_filename = os.path.join(OUTPUTDIR, name + '(transcription).pef')
+        brf_g1_filename = os.path.join(OUTPUTDIR, name + '(transcription).brf')
+        pef_g2_filename = os.path.join(OUTPUTDIR, name + '_g2(transcription).pef')
+        brf_g2_filename = os.path.join(OUTPUTDIR, name + '_g2(transcription).brf')
 
         create_word_document(docx_filename,transcripted_text)
-        create_pef_file(pef_filename,pef)
-        create_brf_file(brf_filename,brf)
+        create_pef_file(pef_g1_filename,pef_g1)
+        create_brf_file(brf_g1_filename,brf_g1)
+        create_pef_file(pef_g2_filename,pef_g2)
+        create_brf_file(brf_g2_filename,brf_g2)
 
         os.remove(new_file_path)
 
-        # download_links = get_download_links(name)
-
-        response_content = get_response_content(name, transcripted_text, brf, pef)
+        response_content = get_response_content(name, transcripted_text,pef_g1,pef_g2)
 
         #returnJSON with braille and transcription
         return JSONResponse(content=response_content)
-
-        # Return JSON response with download links
-        # return JSONResponse(content=download_links)
     
     except Exception as e:
         # Log the error for debugging purposes
@@ -273,27 +272,25 @@ async def transcribe_text(request_data: dict):
 
     input_string = request_data['input_string']
 
-    brf,pef = convert_to_braille(input_string)
+    brf_g1,brf_g2,pef_g1,pef_g2 = convert_to_braille(input_string)
 
     name = 'text_input'
     docx_filename = os.path.join(OUTPUTDIR, name + '(transcription).doc')
-    pef_filename = os.path.join(OUTPUTDIR, name + '(transcription).pef')
-    brf_filename = os.path.join(OUTPUTDIR, name + '(transcription).brf')
+    pef_g1_filename = os.path.join(OUTPUTDIR, name + '(transcription).pef')
+    brf_g1_filename = os.path.join(OUTPUTDIR, name + '(transcription).brf')
+    pef_g2_filename = os.path.join(OUTPUTDIR, name + '_g2(transcription).pef')
+    brf_g2_filename = os.path.join(OUTPUTDIR, name + '_g2(transcription).brf')
 
     create_word_document(docx_filename,input_string)
-    create_pef_file(pef_filename,pef)
-    create_brf_file(brf_filename,brf)
-
-
-    # download_links = get_download_links(name)
+    create_pef_file(pef_g1_filename,pef_g1)
+    create_brf_file(brf_g1_filename,brf_g1)
+    create_pef_file(pef_g2_filename,pef_g2)
+    create_brf_file(brf_g2_filename,brf_g2)
     
-    response_content = get_response_content(name, input_string, brf, pef)
+    response_content = get_response_content(name, input_string,pef_g1,pef_g2)
 
     #returnJSON with braille and transcription
     return JSONResponse(content=response_content)
-
-    # Return JSON response with download links
-    # return JSONResponse(content=download_links)
 
 @app.get('/download/outputs/{file_path:path}')
 async def download_file(file_path: str):

@@ -1,7 +1,7 @@
 import easyocr
 import speechbrain as sb
-from speechbrain.pretrained import EncoderDecoderASR
-
+#from speechbrain.pretrained import EncoderDecoderASR
+from speechbrain.inference.ASR import EncoderDecoderASR
 
 #To remove GPU Util remove gpu=True and run_opts = {"device":"cuda"}
 
@@ -18,9 +18,16 @@ def OCR_Model():
     return reader
 
 def ASR_Model():
-    asr_model = EncoderDecoderASR.from_hparams(
-    source="speechbrain/asr-crdnn-rnnlm-librispeech",
-    savedir="pretrained_models/asr-crdnn-rnnlm-librispeech",
-    run_opts = {"device": "cuda"}
-)
+    asr_model= EncoderDecoderASR.from_hparams(source="speechbrain/asr-crdnn-rnnlm-librispeech",\
+                                              savedir="pretrained_models/asr-crdnn-rnnlm-librispeech",\
+                                              run_opts = {"device": "cuda"})
+
+
     return asr_model
+
+
+"""   asr_model = EncoderDecoderASR.from_hparams(
+    source="speechbrain/asr-crdnn-rnnlm-librispeech",
+    savedir="pretrained_models/asr-crdnn-rnnlm-librispeech", 
+    run_opts = {"device": "cuda"}
+)"""
